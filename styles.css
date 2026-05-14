@@ -210,6 +210,31 @@ canvas {
   text-transform: uppercase;
 }
 
+.tool-buttons,
+.reference-buttons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.button.tool-choice,
+.button.reference-choice {
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #e1d3bd;
+}
+
+.button.tool-choice.active,
+.button.reference-choice.active {
+  color: #fff8eb;
+  background: var(--accent);
+}
+
+.bucket-mode {
+  cursor: cell;
+}
+
 .palette {
   display: grid;
   grid-template-columns: repeat(5, 38px);

@@ -2,6 +2,94 @@ const GAME_SECONDS = 180;
 const CANVAS_SIZE = 420;
 const SAMPLE_STEP = 3;
 const SCORE_BOUNDS = { min: 54, max: 366 };
+const REFERENCE_IMAGES = [
+  {
+    name: "Royal Portrait",
+    shapes: [
+      { type: "rect", fill: "#893024", x: 54, y: 54, w: 312, h: 312 },
+      { type: "blob", fill: "#151b20", points: [[118,59],[164,52],[183,73],[220,70],[205,92],[217,125],[204,166],[224,197],[206,246],[161,225],[139,180],[108,171],[101,124]] },
+      { type: "blob", fill: "#f3f2dc", points: [[82,249],[112,235],[158,242],[205,244],[251,252],[279,280],[291,340],[279,366],[111,366],[85,347],[71,302]] },
+      { type: "blob", fill: "#151b20", points: [[82,216],[115,202],[139,220],[132,252],[105,264],[79,250]] },
+      { type: "blob", fill: "#f3f2dc", points: [[92,218],[116,213],[131,226],[124,247],[101,253],[87,239]] },
+      { type: "blob", fill: "#d29b4b", points: [[117,232],[132,235],[138,250],[128,266],[111,262],[104,247]] },
+      { type: "blob", fill: "#f3f2dc", points: [[214,211],[252,202],[280,215],[285,242],[252,254],[221,244]] },
+      { type: "blob", fill: "#d29b4b", points: [[177,94],[199,99],[203,128],[190,148],[168,137],[163,110]] },
+      { type: "blob", fill: "#f3f2dc", points: [[164,117],[177,127],[189,121],[198,134],[187,152],[165,147],[153,130]] },
+      { type: "blob", fill: "#151b20", points: [[158,92],[176,81],[195,86],[207,100],[204,121],[191,113],[176,119],[162,111]] },
+      { type: "blob", fill: "#f0d9be", points: [[161,145],[188,158],[219,186],[243,222],[207,226],[172,205],[145,184]] },
+      { type: "blob", fill: "#f0d9be", points: [[126,166],[156,179],[189,207],[166,219],[132,202],[109,184]] },
+      { type: "blob", fill: "#893024", points: [[121,177],[158,154],[196,169],[226,207],[217,243],[174,226],[140,207],[104,207]] },
+      { type: "blob", fill: "#f0d9be", points: [[127,157],[164,172],[188,193],[177,205],[141,184],[112,170]] },
+      { type: "line", stroke: "#d29b4b", width: 10, points: [[88,94],[88,310]] },
+      { type: "line", stroke: "#d29b4b", width: 8, points: [[81,101],[107,101]] },
+      { type: "line", stroke: "#d29b4b", width: 8, points: [[87,119],[118,123]] },
+      { type: "line", stroke: "#d29b4b", width: 7, points: [[292,88],[292,180]] },
+      { type: "line", stroke: "#d29b4b", width: 6, points: [[282,101],[304,101]] },
+      { type: "line", stroke: "#d29b4b", width: 6, points: [[281,122],[309,119]] },
+      { type: "circle", fill: "#d29b4b", x: 87, y: 83, r: 9 },
+      { type: "circle", fill: "#d29b4b", x: 292, y: 82, r: 8 }
+    ]
+  },
+  {
+    name: "Sunset Peaks",
+    shapes: [
+      { type: "rect", fill: "#2e5a88", x: 54, y: 54, w: 312, h: 312 },
+      { type: "circle", fill: "#d29b4b", x: 303, y: 111, r: 42 },
+      { type: "blob", fill: "#c94b3a", points: [[54,225],[119,148],[178,227],[226,160],[366,283],[366,366],[54,366]] },
+      { type: "blob", fill: "#5d3b25", points: [[54,276],[143,183],[219,280],[278,221],[366,318],[366,366],[54,366]] },
+      { type: "blob", fill: "#f3f2dc", points: [[119,148],[100,171],[139,174]] },
+      { type: "blob", fill: "#f3f2dc", points: [[226,160],[205,190],[247,188]] },
+      { type: "line", stroke: "#f3f2dc", width: 8, points: [[82,106],[142,106]] },
+      { type: "line", stroke: "#f3f2dc", width: 8, points: [[97,123],[174,123]] }
+    ]
+  },
+  {
+    name: "Goldfish Bowl",
+    shapes: [
+      { type: "rect", fill: "#f0d9be", x: 54, y: 54, w: 312, h: 312 },
+      { type: "circle", fill: "#2e5a88", x: 210, y: 229, r: 112 },
+      { type: "circle", fill: "#f8f3e7", x: 210, y: 195, r: 88 },
+      { type: "blob", fill: "#d29b4b", points: [[132,222],[189,183],[257,197],[287,230],[256,263],[190,270]] },
+      { type: "blob", fill: "#c94b3a", points: [[287,230],[335,202],[319,232],[337,267]] },
+      { type: "circle", fill: "#151b20", x: 172, y: 220, r: 8 },
+      { type: "circle", fill: "#f3f2dc", x: 268, y: 119, r: 13 },
+      { type: "circle", fill: "#f3f2dc", x: 300, y: 91, r: 9 },
+      { type: "line", stroke: "#4d7f57", width: 10, points: [[113,334],[132,289],[121,250]] },
+      { type: "line", stroke: "#4d7f57", width: 10, points: [[301,333],[282,292],[291,254]] }
+    ]
+  },
+  {
+    name: "Tiny Robot",
+    shapes: [
+      { type: "rect", fill: "#f3f2dc", x: 54, y: 54, w: 312, h: 312 },
+      { type: "rect", fill: "#2e5a88", x: 129, y: 126, w: 162, h: 146 },
+      { type: "rect", fill: "#151b20", x: 154, y: 87, w: 112, h: 54 },
+      { type: "circle", fill: "#d29b4b", x: 177, y: 178, r: 18 },
+      { type: "circle", fill: "#d29b4b", x: 243, y: 178, r: 18 },
+      { type: "line", stroke: "#f0d9be", width: 11, points: [[169,229],[251,229]] },
+      { type: "line", stroke: "#151b20", width: 13, points: [[129,169],[91,206],[96,254]] },
+      { type: "line", stroke: "#151b20", width: 13, points: [[291,169],[329,206],[324,254]] },
+      { type: "line", stroke: "#151b20", width: 13, points: [[170,272],[156,336]] },
+      { type: "line", stroke: "#151b20", width: 13, points: [[250,272],[264,336]] },
+      { type: "circle", fill: "#c94b3a", x: 210, y: 73, r: 13 }
+    ]
+  },
+  {
+    name: "Flower Pot",
+    shapes: [
+      { type: "rect", fill: "#f8f3e7", x: 54, y: 54, w: 312, h: 312 },
+      { type: "line", stroke: "#4d7f57", width: 14, points: [[210,304],[210,206]] },
+      { type: "line", stroke: "#4d7f57", width: 10, points: [[208,251],[163,219]] },
+      { type: "line", stroke: "#4d7f57", width: 10, points: [[212,260],[265,225]] },
+      { type: "blob", fill: "#893024", points: [[142,291],[278,291],[255,366],[165,366]] },
+      { type: "blob", fill: "#d29b4b", points: [[210,126],[235,168],[210,209],[185,168]] },
+      { type: "blob", fill: "#c94b3a", points: [[210,126],[251,145],[251,190],[210,209]] },
+      { type: "blob", fill: "#c94b3a", points: [[210,126],[169,145],[169,190],[210,209]] },
+      { type: "circle", fill: "#f3f2dc", x: 210, y: 168, r: 28 },
+      { type: "blob", fill: "#4d7f57", points: [[164,219],[122,201],[147,243]] },
+      { type: "blob", fill: "#4d7f57", points: [[265,225],[310,205],[287,251]] }
+    ]
+  }
 const ORIGINAL_SHAPES = [
   { type: "rect", fill: "#893024", x: 54, y: 54, w: 312, h: 312 },
   { type: "blob", fill: "#151b20", points: [[118,59],[164,52],[183,73],[220,70],[205,92],[217,125],[204,166],[224,197],[206,246],[161,225],[139,180],[108,171],[101,124]] },
@@ -31,6 +119,8 @@ const COLORS = ["#151b20", "#893024", "#f3f2dc", "#f0d9be", "#d29b4b", "#ffffff"
 const state = {
   brushColor: COLORS[0],
   brushSize: 14,
+  tool: "brush",
+  activeReferenceIndex: 0,
   drawing: false,
   started: false,
   finished: false,
@@ -46,6 +136,7 @@ const els = {
   actionBar: document.querySelector("#action-bar"),
   toolPanel: document.querySelector("#tool-panel"),
   brushLabel: document.querySelector("#brush-label"),
+  referenceName: document.querySelector(".reference-card .card-heading span"),
   resultPanel: document.querySelector("#result-panel"),
   resultCopy: document.querySelector("#result-copy"),
   meterFill: document.querySelector("#meter-fill"),
@@ -73,6 +164,20 @@ function buildInterface() {
     createButton("Reset canvas", "secondary", resetRound)
   );
 
+
+  const referenceGroup = document.createElement("div");
+  referenceGroup.className = "tool-group";
+  referenceGroup.append(createGroupTitle("Reference image"));
+
+  const referenceButtons = document.createElement("div");
+  referenceButtons.className = "reference-buttons";
+  REFERENCE_IMAGES.forEach((reference, index) => {
+    const button = createButton(`${index + 1}. ${reference.name}`, index === state.activeReferenceIndex ? "reference-choice active" : "reference-choice", () => selectReference(index));
+    button.dataset.referenceIndex = String(index);
+    referenceButtons.append(button);
+  });
+  referenceGroup.append(referenceButtons);
+
   const colorGroup = document.createElement("div");
   colorGroup.className = "tool-group";
   colorGroup.append(createGroupTitle("Palette"));
@@ -90,6 +195,23 @@ function buildInterface() {
     palette.append(swatch);
   });
   colorGroup.append(palette);
+
+  const modeGroup = document.createElement("div");
+  modeGroup.className = "tool-group";
+  modeGroup.append(createGroupTitle("Tool"));
+
+  const toolButtons = document.createElement("div");
+  toolButtons.className = "tool-buttons";
+  [
+    ["brush", "Brush"],
+    ["bucket", "Paint bucket"],
+    ["eraser", "Eraser"]
+  ].forEach(([tool, label]) => {
+    const button = createButton(label, tool === state.tool ? "tool-choice active" : "tool-choice", () => selectTool(tool));
+    button.dataset.tool = tool;
+    toolButtons.append(button);
+  });
+  modeGroup.append(toolButtons);
 
   const brushGroup = document.createElement("div");
   brushGroup.className = "tool-group";
@@ -116,6 +238,7 @@ function buildInterface() {
   help.className = "help-text";
   help.textContent = "Use your mouse, stylus, or finger. The final score samples both canvases and rewards close color matches in the right places.";
 
+  els.toolPanel.append(referenceGroup, modeGroup, colorGroup, brushGroup, help);
   els.toolPanel.append(colorGroup, brushGroup, help);
 }
 
@@ -126,6 +249,22 @@ function createGroupTitle(text) {
   return title;
 }
 
+function getActiveReference() {
+  return REFERENCE_IMAGES[state.activeReferenceIndex];
+}
+
+function selectReference(index) {
+  state.activeReferenceIndex = index;
+  document.querySelectorAll("[data-reference-index]").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.referenceIndex) === index);
+  });
+  drawOriginal();
+  resetRound();
+}
+
+function selectColor(color, activeSwatch) {
+  state.brushColor = color;
+  if (state.tool === "eraser") selectTool("brush");
 function selectColor(color, activeSwatch) {
   state.brushColor = color;
   document.querySelectorAll(".swatch").forEach((swatch) => swatch.classList.remove("active"));
@@ -133,6 +272,27 @@ function selectColor(color, activeSwatch) {
   updateBrushLabel();
 }
 
+function selectTool(tool) {
+  state.tool = tool;
+  document.querySelectorAll("[data-tool]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tool === tool);
+  });
+  els.drawingCanvas.classList.toggle("bucket-mode", tool === "bucket");
+  updateBrushLabel();
+}
+
+function updateBrushLabel() {
+  const colorText = state.tool === "eraser" ? "paper" : state.brushColor;
+  els.brushLabel.textContent = `Tool: ${state.tool}, ${colorText}, ${state.brushSize}px`;
+}
+
+function drawOriginal() {
+  const reference = getActiveReference();
+  referenceContext.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  drawPaper(referenceContext);
+  reference.shapes.forEach((shape) => drawShape(referenceContext, shape));
+  drawFrame(referenceContext);
+  els.referenceName.textContent = reference.name;
 function updateBrushLabel() {
   els.brushLabel.textContent = `Brush: ${state.brushColor}, ${state.brushSize}px`;
 }
@@ -267,6 +427,21 @@ function getScoreMessage(score) {
 function scoreDrawing() {
   const original = referenceContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
   const copy = drawingContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
+  const blank = makeBlankDrawingData();
+  const copyScore = getWeightedSimilarity(original, copy);
+  const blankScore = getWeightedSimilarity(original, blank);
+  const normalizedScore = ((copyScore - blankScore) / (100 - blankScore)) * 100;
+  return Math.max(0, Math.min(100, normalizedScore));
+}
+
+function makeBlankDrawingData() {
+  const comparisonContext = els.comparisonCanvas.getContext("2d", { willReadFrequently: true });
+  comparisonContext.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  drawPaper(comparisonContext);
+  return comparisonContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
+}
+
+function getWeightedSimilarity(original, copy) {
   let weightedScore = 0;
   let totalWeight = 0;
 
@@ -274,6 +449,8 @@ function scoreDrawing() {
     for (let x = SCORE_BOUNDS.min; x < SCORE_BOUNDS.max; x += SAMPLE_STEP) {
       const index = (y * CANVAS_SIZE + x) * 4;
       const originalBrightness = getBrightness(original[index], original[index + 1], original[index + 2]);
+      const backgroundPenalty = originalBrightness > 232 ? 0.25 : 1;
+      const edgeWeight = isNearOriginalEdge(original, x, y) ? 1.45 : 1;
       const backgroundPenalty = originalBrightness > 232 ? 0.55 : 1;
       const edgeWeight = isNearOriginalEdge(original, x, y) ? 1.35 : 1;
       const weight = backgroundPenalty * edgeWeight;
@@ -284,6 +461,7 @@ function scoreDrawing() {
     }
   }
 
+  return (weightedScore / totalWeight) * 100;
   return Math.max(0, Math.min(100, (weightedScore / totalWeight) * 100));
 }
 
@@ -319,6 +497,13 @@ function getCanvasPoint(event) {
 function beginStroke(event) {
   if (state.finished) return;
   if (!state.started) startGame();
+  const point = getCanvasPoint(event);
+  if (state.tool === "bucket") {
+    floodFill(point);
+    return;
+  }
+  state.drawing = true;
+  state.lastPoint = point;
   state.drawing = true;
   state.lastPoint = getCanvasPoint(event);
   drawDot(state.lastPoint);
@@ -328,6 +513,7 @@ function continueStroke(event) {
   if (!state.drawing || state.finished) return;
   event.preventDefault();
   const point = getCanvasPoint(event);
+  drawingContext.strokeStyle = getActiveDrawColor(point);
   drawingContext.strokeStyle = state.brushColor;
   drawingContext.lineWidth = state.brushSize;
   drawingContext.lineCap = "round";
@@ -345,10 +531,74 @@ function endStroke() {
 }
 
 function drawDot(point) {
+  drawingContext.fillStyle = getActiveDrawColor(point);
   drawingContext.fillStyle = state.brushColor;
   drawingContext.beginPath();
   drawingContext.arc(point.x, point.y, state.brushSize / 2, 0, Math.PI * 2);
   drawingContext.fill();
+}
+
+function getActiveDrawColor(point) {
+  return state.tool === "eraser" ? getPaperColorForPoint(point) : state.brushColor;
+}
+
+function getPaperColorForPoint(point) {
+  if (!point) return "#eee4cf";
+  return point.x >= 38 && point.x <= 382 && point.y >= 38 && point.y <= 382 ? "#eee4cf" : "#f8f3e7";
+}
+
+function floodFill(point) {
+  const x = Math.floor(point.x);
+  const y = Math.floor(point.y);
+  const image = drawingContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  const data = image.data;
+  const startIndex = (y * CANVAS_SIZE + x) * 4;
+  const target = [data[startIndex], data[startIndex + 1], data[startIndex + 2], data[startIndex + 3]];
+  const replacement = hexToRgba(state.brushColor);
+  if (colorsMatch(target, replacement, 0)) return;
+
+  const tolerance = 28;
+  const stack = [[x, y]];
+  const visited = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE);
+
+  while (stack.length) {
+    const [currentX, currentY] = stack.pop();
+    if (currentX < 0 || currentX >= CANVAS_SIZE || currentY < 0 || currentY >= CANVAS_SIZE) continue;
+
+    const pixelIndex = currentY * CANVAS_SIZE + currentX;
+    if (visited[pixelIndex]) continue;
+    visited[pixelIndex] = 1;
+
+    const dataIndex = pixelIndex * 4;
+    const current = [data[dataIndex], data[dataIndex + 1], data[dataIndex + 2], data[dataIndex + 3]];
+    if (!colorsMatch(current, target, tolerance)) continue;
+
+    data[dataIndex] = replacement[0];
+    data[dataIndex + 1] = replacement[1];
+    data[dataIndex + 2] = replacement[2];
+    data[dataIndex + 3] = replacement[3];
+
+    stack.push([currentX + 1, currentY], [currentX - 1, currentY], [currentX, currentY + 1], [currentX, currentY - 1]);
+  }
+
+  drawingContext.putImageData(image, 0, 0);
+}
+
+function colorsMatch(first, second, tolerance) {
+  return Math.abs(first[0] - second[0]) <= tolerance
+    && Math.abs(first[1] - second[1]) <= tolerance
+    && Math.abs(first[2] - second[2]) <= tolerance
+    && Math.abs(first[3] - second[3]) <= tolerance;
+}
+
+function hexToRgba(hex) {
+  const value = hex.replace("#", "");
+  return [
+    parseInt(value.slice(0, 2), 16),
+    parseInt(value.slice(2, 4), 16),
+    parseInt(value.slice(4, 6), 16),
+    255
+  ];
 }
 
 function wireDrawingEvents() {
