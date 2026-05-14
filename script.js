@@ -90,29 +90,6 @@ const REFERENCE_IMAGES = [
       { type: "blob", fill: "#4d7f57", points: [[265,225],[310,205],[287,251]] }
     ]
   }
-const ORIGINAL_SHAPES = [
-  { type: "rect", fill: "#893024", x: 54, y: 54, w: 312, h: 312 },
-  { type: "blob", fill: "#151b20", points: [[118,59],[164,52],[183,73],[220,70],[205,92],[217,125],[204,166],[224,197],[206,246],[161,225],[139,180],[108,171],[101,124]] },
-  { type: "blob", fill: "#f3f2dc", points: [[82,249],[112,235],[158,242],[205,244],[251,252],[279,280],[291,340],[279,366],[111,366],[85,347],[71,302]] },
-  { type: "blob", fill: "#151b20", points: [[82,216],[115,202],[139,220],[132,252],[105,264],[79,250]] },
-  { type: "blob", fill: "#f3f2dc", points: [[92,218],[116,213],[131,226],[124,247],[101,253],[87,239]] },
-  { type: "blob", fill: "#d29b4b", points: [[117,232],[132,235],[138,250],[128,266],[111,262],[104,247]] },
-  { type: "blob", fill: "#f3f2dc", points: [[214,211],[252,202],[280,215],[285,242],[252,254],[221,244]] },
-  { type: "blob", fill: "#d29b4b", points: [[177,94],[199,99],[203,128],[190,148],[168,137],[163,110]] },
-  { type: "blob", fill: "#f3f2dc", points: [[164,117],[177,127],[189,121],[198,134],[187,152],[165,147],[153,130]] },
-  { type: "blob", fill: "#151b20", points: [[158,92],[176,81],[195,86],[207,100],[204,121],[191,113],[176,119],[162,111]] },
-  { type: "blob", fill: "#f0d9be", points: [[161,145],[188,158],[219,186],[243,222],[207,226],[172,205],[145,184]] },
-  { type: "blob", fill: "#f0d9be", points: [[126,166],[156,179],[189,207],[166,219],[132,202],[109,184]] },
-  { type: "blob", fill: "#893024", points: [[121,177],[158,154],[196,169],[226,207],[217,243],[174,226],[140,207],[104,207]] },
-  { type: "blob", fill: "#f0d9be", points: [[127,157],[164,172],[188,193],[177,205],[141,184],[112,170]] },
-  { type: "line", stroke: "#d29b4b", width: 10, points: [[88,94],[88,310]] },
-  { type: "line", stroke: "#d29b4b", width: 8, points: [[81,101],[107,101]] },
-  { type: "line", stroke: "#d29b4b", width: 8, points: [[87,119],[118,123]] },
-  { type: "line", stroke: "#d29b4b", width: 7, points: [[292,88],[292,180]] },
-  { type: "line", stroke: "#d29b4b", width: 6, points: [[282,101],[304,101]] },
-  { type: "line", stroke: "#d29b4b", width: 6, points: [[281,122],[309,119]] },
-  { type: "circle", fill: "#d29b4b", x: 87, y: 83, r: 9 },
-  { type: "circle", fill: "#d29b4b", x: 292, y: 82, r: 8 }
 ];
 const COLORS = ["#151b20", "#893024", "#f3f2dc", "#f0d9be", "#d29b4b", "#ffffff", "#5d3b25", "#4d7f57", "#2e5a88", "#c94b3a"];
 
@@ -239,7 +216,6 @@ function buildInterface() {
   help.textContent = "Use your mouse, stylus, or finger. The final score samples both canvases and rewards close color matches in the right places.";
 
   els.toolPanel.append(referenceGroup, modeGroup, colorGroup, brushGroup, help);
-  els.toolPanel.append(colorGroup, brushGroup, help);
 }
 
 function createGroupTitle(text) {
@@ -265,8 +241,6 @@ function selectReference(index) {
 function selectColor(color, activeSwatch) {
   state.brushColor = color;
   if (state.tool === "eraser") selectTool("brush");
-function selectColor(color, activeSwatch) {
-  state.brushColor = color;
   document.querySelectorAll(".swatch").forEach((swatch) => swatch.classList.remove("active"));
   activeSwatch.classList.add("active");
   updateBrushLabel();
@@ -293,15 +267,6 @@ function drawOriginal() {
   reference.shapes.forEach((shape) => drawShape(referenceContext, shape));
   drawFrame(referenceContext);
   els.referenceName.textContent = reference.name;
-function updateBrushLabel() {
-  els.brushLabel.textContent = `Brush: ${state.brushColor}, ${state.brushSize}px`;
-}
-
-function drawOriginal() {
-  referenceContext.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-  drawPaper(referenceContext);
-  ORIGINAL_SHAPES.forEach((shape) => drawShape(referenceContext, shape));
-  drawFrame(referenceContext);
 }
 
 function drawPaper(ctx) {
@@ -451,8 +416,6 @@ function getWeightedSimilarity(original, copy) {
       const originalBrightness = getBrightness(original[index], original[index + 1], original[index + 2]);
       const backgroundPenalty = originalBrightness > 232 ? 0.25 : 1;
       const edgeWeight = isNearOriginalEdge(original, x, y) ? 1.45 : 1;
-      const backgroundPenalty = originalBrightness > 232 ? 0.55 : 1;
-      const edgeWeight = isNearOriginalEdge(original, x, y) ? 1.35 : 1;
       const weight = backgroundPenalty * edgeWeight;
       const distance = colorDistance(original, copy, index);
       const pixelScore = Math.max(0, 1 - distance / 441.68);
@@ -462,7 +425,6 @@ function getWeightedSimilarity(original, copy) {
   }
 
   return (weightedScore / totalWeight) * 100;
-  return Math.max(0, Math.min(100, (weightedScore / totalWeight) * 100));
 }
 
 function colorDistance(original, copy, originalIndex, copyIndex = originalIndex) {
@@ -504,8 +466,6 @@ function beginStroke(event) {
   }
   state.drawing = true;
   state.lastPoint = point;
-  state.drawing = true;
-  state.lastPoint = getCanvasPoint(event);
   drawDot(state.lastPoint);
 }
 
@@ -514,7 +474,6 @@ function continueStroke(event) {
   event.preventDefault();
   const point = getCanvasPoint(event);
   drawingContext.strokeStyle = getActiveDrawColor(point);
-  drawingContext.strokeStyle = state.brushColor;
   drawingContext.lineWidth = state.brushSize;
   drawingContext.lineCap = "round";
   drawingContext.lineJoin = "round";
@@ -532,7 +491,6 @@ function endStroke() {
 
 function drawDot(point) {
   drawingContext.fillStyle = getActiveDrawColor(point);
-  drawingContext.fillStyle = state.brushColor;
   drawingContext.beginPath();
   drawingContext.arc(point.x, point.y, state.brushSize / 2, 0, Math.PI * 2);
   drawingContext.fill();
