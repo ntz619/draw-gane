@@ -8,12 +8,7 @@
 </head>
 <body>
   <main class="app-shell">
-    <section class="hero-panel" aria-labelledby="game-title">
-      <p class="eyebrow">3 minute redraw challenge</p>
-      <h1 id="game-title">Draw Gane</h1>
-      <p class="intro">
-        Study the simple source picture, redraw it before time runs out, and get a pixel-level accuracy score against the original.
-      </p>
+    <section class="game-bar" aria-label="Game status">
       <div class="stats-strip" aria-live="polite">
         <div>
           <span class="label">Time</span>
@@ -46,17 +41,11 @@
           <span id="brush-label">Brush: black, 14px</span>
         </div>
         <canvas id="drawing-canvas" width="420" height="420" aria-label="Drawing canvas"></canvas>
-      </article>
-
-      <aside class="card tools-card" aria-label="Drawing tools">
-        <h2>Tools</h2>
-        <div id="tool-panel"></div>
+        <div class="drawing-tools" id="tool-panel" aria-label="Drawing tools"></div>
         <div class="result-panel" id="result-panel" hidden>
-          <h3>Result details</h3>
-          <p id="result-copy"></p>
           <div class="meter" aria-hidden="true"><span id="meter-fill"></span></div>
         </div>
-      </aside>
+      </article>
     </section>
 
     <canvas id="comparison-canvas" width="420" height="420" hidden></canvas>

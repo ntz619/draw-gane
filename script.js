@@ -127,7 +127,6 @@ const els = {
   brushLabel: document.querySelector("#brush-label"),
   referenceName: document.querySelector(".reference-card .card-heading span"),
   resultPanel: document.querySelector("#result-panel"),
-  resultCopy: document.querySelector("#result-copy"),
   meterFill: document.querySelector("#meter-fill"),
   referenceCanvas: document.querySelector("#reference-canvas"),
   drawingCanvas: document.querySelector("#drawing-canvas"),
@@ -146,14 +145,18 @@ function createIcon(name) {
   return svg;
 }
 
-function createButton(label, className, onClick, iconName) {
+function createButton(label, className, onClick, iconName, iconOnly = false) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = `button ${className || ""}`.trim();
+  button.setAttribute("aria-label", label);
+  button.title = label;
   if (iconName) button.append(createIcon(iconName));
-  const labelText = document.createElement("span");
-  labelText.textContent = label;
-  button.append(labelText);
+  if (!iconOnly) {
+    const labelText = document.createElement("span");
+    labelText.textContent = label;
+    button.append(labelText);
+  }
   button.addEventListener("click", onClick);
   return button;
 }
@@ -194,7 +197,7 @@ function buildInterface() {
     ["bucket", "Paint bucket", "bucket"],
     ["eraser", "Eraser", "eraser"]
   ].forEach(([tool, label, iconName]) => {
-    const button = createButton(label, tool === state.tool ? "tool-choice active" : "tool-choice", () => selectTool(tool), iconName);
+    const button = createButton(label, tool === state.tool ? "tool-choice active" : "tool-choice", () => selectTool(tool), iconName, true);
     button.dataset.tool = tool;
     toolButtons.append(button);
   });
@@ -221,11 +224,7 @@ function buildInterface() {
   rangeRow.append(range, rangeValue);
   brushGroup.append(rangeRow);
 
-  const help = document.createElement("p");
-  help.className = "help-text";
-  help.textContent = "Use your mouse, stylus, or finger. The final score samples both canvases and rewards close color matches in the right places.";
-
-  els.toolPanel.append(modeGroup, colorGroup, brushGroup, help);
+  els.toolPanel.append(modeGroup, colorGroup, brushGroup);
 }
 
 function createGroupTitle(text) {
@@ -379,15 +378,7 @@ function finishGame() {
   els.status.textContent = "Scored";
   els.drawingCanvas.classList.add("locked");
   els.resultPanel.hidden = false;
-  els.resultCopy.textContent = getScoreMessage(rounded);
   els.meterFill.style.width = `${rounded}%`;
-}
-
-function getScoreMessage(score) {
-  if (score >= 88) return "Museum-level copy! Your shapes, colors, and placement are extremely close to the original.";
-  if (score >= 70) return "Strong redraw. The main colors and silhouettes landed in the right regions.";
-  if (score >= 45) return "Recognizable attempt. Try blocking in the big background, black shape, and white dress first.";
-  return "Keep practicing. Larger color zones and closer placement will raise the real pixel accuracy score.";
 }
 
 function scoreDrawing() {
