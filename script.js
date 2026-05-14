@@ -31,7 +31,6 @@ const COLORS = ["#151b20", "#893024", "#f3f2dc", "#f0d9be", "#d29b4b", "#ffffff"
 const state = {
   brushColor: COLORS[0],
   brushSize: 14,
-  tool: "brush",
   drawing: false,
   started: false,
   finished: false,
@@ -92,23 +91,6 @@ function buildInterface() {
   });
   colorGroup.append(palette);
 
-  const modeGroup = document.createElement("div");
-  modeGroup.className = "tool-group";
-  modeGroup.append(createGroupTitle("Tool"));
-
-  const toolButtons = document.createElement("div");
-  toolButtons.className = "tool-buttons";
-  [
-    ["brush", "Brush"],
-    ["bucket", "Paint bucket"],
-    ["eraser", "Eraser"]
-  ].forEach(([tool, label]) => {
-    const button = createButton(label, tool === state.tool ? "tool-choice active" : "tool-choice", () => selectTool(tool));
-    button.dataset.tool = tool;
-    toolButtons.append(button);
-  });
-  modeGroup.append(toolButtons);
-
   const brushGroup = document.createElement("div");
   brushGroup.className = "tool-group";
   brushGroup.append(createGroupTitle("Brush size"));
@@ -134,7 +116,7 @@ function buildInterface() {
   help.className = "help-text";
   help.textContent = "Use your mouse, stylus, or finger. The final score samples both canvases and rewards close color matches in the right places.";
 
-  els.toolPanel.append(modeGroup, colorGroup, brushGroup, help);
+  els.toolPanel.append(colorGroup, brushGroup, help);
 }
 
 function createGroupTitle(text) {
@@ -146,24 +128,13 @@ function createGroupTitle(text) {
 
 function selectColor(color, activeSwatch) {
   state.brushColor = color;
-  if (state.tool === "eraser") selectTool("brush");
   document.querySelectorAll(".swatch").forEach((swatch) => swatch.classList.remove("active"));
   activeSwatch.classList.add("active");
   updateBrushLabel();
 }
 
-function selectTool(tool) {
-  state.tool = tool;
-  document.querySelectorAll("[data-tool]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.tool === tool);
-  });
-  els.drawingCanvas.classList.toggle("bucket-mode", tool === "bucket");
-  updateBrushLabel();
-}
-
 function updateBrushLabel() {
-  const colorText = state.tool === "eraser" ? "paper" : state.brushColor;
-  els.brushLabel.textContent = `Tool: ${state.tool}, ${colorText}, ${state.brushSize}px`;
+  els.brushLabel.textContent = `Brush: ${state.brushColor}, ${state.brushSize}px`;
 }
 
 function drawOriginal() {
@@ -296,21 +267,6 @@ function getScoreMessage(score) {
 function scoreDrawing() {
   const original = referenceContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
   const copy = drawingContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
-  const blank = makeBlankDrawingData();
-  const copyScore = getWeightedSimilarity(original, copy);
-  const blankScore = getWeightedSimilarity(original, blank);
-  const normalizedScore = ((copyScore - blankScore) / (100 - blankScore)) * 100;
-  return Math.max(0, Math.min(100, normalizedScore));
-}
-
-function makeBlankDrawingData() {
-  const comparisonContext = els.comparisonCanvas.getContext("2d", { willReadFrequently: true });
-  comparisonContext.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-  drawPaper(comparisonContext);
-  return comparisonContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
-}
-
-function getWeightedSimilarity(original, copy) {
   let weightedScore = 0;
   let totalWeight = 0;
 
@@ -318,8 +274,8 @@ function getWeightedSimilarity(original, copy) {
     for (let x = SCORE_BOUNDS.min; x < SCORE_BOUNDS.max; x += SAMPLE_STEP) {
       const index = (y * CANVAS_SIZE + x) * 4;
       const originalBrightness = getBrightness(original[index], original[index + 1], original[index + 2]);
-      const backgroundPenalty = originalBrightness > 232 ? 0.25 : 1;
-      const edgeWeight = isNearOriginalEdge(original, x, y) ? 1.45 : 1;
+      const backgroundPenalty = originalBrightness > 232 ? 0.55 : 1;
+      const edgeWeight = isNearOriginalEdge(original, x, y) ? 1.35 : 1;
       const weight = backgroundPenalty * edgeWeight;
       const distance = colorDistance(original, copy, index);
       const pixelScore = Math.max(0, 1 - distance / 441.68);
@@ -328,7 +284,7 @@ function getWeightedSimilarity(original, copy) {
     }
   }
 
-  return (weightedScore / totalWeight) * 100;
+  return Math.max(0, Math.min(100, (weightedScore / totalWeight) * 100));
 }
 
 function colorDistance(original, copy, originalIndex, copyIndex = originalIndex) {
@@ -363,13 +319,8 @@ function getCanvasPoint(event) {
 function beginStroke(event) {
   if (state.finished) return;
   if (!state.started) startGame();
-  const point = getCanvasPoint(event);
-  if (state.tool === "bucket") {
-    floodFill(point);
-    return;
-  }
   state.drawing = true;
-  state.lastPoint = point;
+  state.lastPoint = getCanvasPoint(event);
   drawDot(state.lastPoint);
 }
 
@@ -377,7 +328,7 @@ function continueStroke(event) {
   if (!state.drawing || state.finished) return;
   event.preventDefault();
   const point = getCanvasPoint(event);
-  drawingContext.strokeStyle = getActiveDrawColor(point);
+  drawingContext.strokeStyle = state.brushColor;
   drawingContext.lineWidth = state.brushSize;
   drawingContext.lineCap = "round";
   drawingContext.lineJoin = "round";
@@ -394,73 +345,10 @@ function endStroke() {
 }
 
 function drawDot(point) {
-  drawingContext.fillStyle = getActiveDrawColor(point);
+  drawingContext.fillStyle = state.brushColor;
   drawingContext.beginPath();
   drawingContext.arc(point.x, point.y, state.brushSize / 2, 0, Math.PI * 2);
   drawingContext.fill();
-}
-
-function getActiveDrawColor(point) {
-  return state.tool === "eraser" ? getPaperColorForPoint(point) : state.brushColor;
-}
-
-function getPaperColorForPoint(point) {
-  if (!point) return "#eee4cf";
-  return point.x >= 38 && point.x <= 382 && point.y >= 38 && point.y <= 382 ? "#eee4cf" : "#f8f3e7";
-}
-
-function floodFill(point) {
-  const x = Math.floor(point.x);
-  const y = Math.floor(point.y);
-  const image = drawingContext.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-  const data = image.data;
-  const startIndex = (y * CANVAS_SIZE + x) * 4;
-  const target = [data[startIndex], data[startIndex + 1], data[startIndex + 2], data[startIndex + 3]];
-  const replacement = hexToRgba(state.brushColor);
-  if (colorsMatch(target, replacement, 0)) return;
-
-  const tolerance = 28;
-  const stack = [[x, y]];
-  const visited = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE);
-
-  while (stack.length) {
-    const [currentX, currentY] = stack.pop();
-    if (currentX < 0 || currentX >= CANVAS_SIZE || currentY < 0 || currentY >= CANVAS_SIZE) continue;
-
-    const pixelIndex = currentY * CANVAS_SIZE + currentX;
-    if (visited[pixelIndex]) continue;
-    visited[pixelIndex] = 1;
-
-    const dataIndex = pixelIndex * 4;
-    const current = [data[dataIndex], data[dataIndex + 1], data[dataIndex + 2], data[dataIndex + 3]];
-    if (!colorsMatch(current, target, tolerance)) continue;
-
-    data[dataIndex] = replacement[0];
-    data[dataIndex + 1] = replacement[1];
-    data[dataIndex + 2] = replacement[2];
-    data[dataIndex + 3] = replacement[3];
-
-    stack.push([currentX + 1, currentY], [currentX - 1, currentY], [currentX, currentY + 1], [currentX, currentY - 1]);
-  }
-
-  drawingContext.putImageData(image, 0, 0);
-}
-
-function colorsMatch(first, second, tolerance) {
-  return Math.abs(first[0] - second[0]) <= tolerance
-    && Math.abs(first[1] - second[1]) <= tolerance
-    && Math.abs(first[2] - second[2]) <= tolerance
-    && Math.abs(first[3] - second[3]) <= tolerance;
-}
-
-function hexToRgba(hex) {
-  const value = hex.replace("#", "");
-  return [
-    parseInt(value.slice(0, 2), 16),
-    parseInt(value.slice(2, 4), 16),
-    parseInt(value.slice(4, 6), 16),
-    255
-  ];
 }
 
 function wireDrawingEvents() {
