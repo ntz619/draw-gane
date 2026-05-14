@@ -92,12 +92,24 @@ const REFERENCE_IMAGES = [
   }
 ];
 const COLORS = ["#151b20", "#893024", "#f3f2dc", "#f0d9be", "#d29b4b", "#ffffff", "#5d3b25", "#4d7f57", "#2e5a88", "#c94b3a"];
+const ICONS = {
+  play: '<path d="M8 5v14l11-7z"></path>',
+  target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M2 12h4"></path><path d="M18 12h4"></path>',
+  reset: '<path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6"></path>',
+  brush: '<path d="M7 21c2.8 0 5-2.2 5-5 0-1.1-.9-2-2-2s-2 .9-2 2c0 1.7-1.3 3-3 3H4v2h3z"></path><path d="M14 14 21 7l-4-4-7 7"></path><path d="m10 10 4 4"></path>',
+  bucket: '<path d="m5 11 6-6 8 8-6 6a2 2 0 0 1-3 0l-5-5a2 2 0 0 1 0-3z"></path><path d="m5 11 8 8"></path><path d="M19 16c1.2 1.3 2 2.5 2 3.4a2 2 0 0 1-4 0c0-.9.8-2.1 2-3.4z"></path>',
+  eraser: '<path d="m7 21-4-4a2 2 0 0 1 0-3L14 3a2 2 0 0 1 3 0l4 4a2 2 0 0 1 0 3L10 21z"></path><path d="m14 7 3 3"></path><path d="M7 21h14"></path>'
+};
+
+function getRandomReferenceIndex() {
+  return Math.floor(Math.random() * REFERENCE_IMAGES.length);
+}
 
 const state = {
   brushColor: COLORS[0],
   brushSize: 14,
   tool: "brush",
-  activeReferenceIndex: 0,
+  activeReferenceIndex: getRandomReferenceIndex(),
   drawing: false,
   started: false,
   finished: false,
@@ -125,35 +137,33 @@ const els = {
 const referenceContext = els.referenceCanvas.getContext("2d", { willReadFrequently: true });
 const drawingContext = els.drawingCanvas.getContext("2d", { willReadFrequently: true });
 
-function createButton(label, className, onClick) {
+function createIcon(name) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  svg.innerHTML = ICONS[name] || "";
+  return svg;
+}
+
+function createButton(label, className, onClick, iconName) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = `button ${className || ""}`.trim();
-  button.textContent = label;
+  if (iconName) button.append(createIcon(iconName));
+  const labelText = document.createElement("span");
+  labelText.textContent = label;
+  button.append(labelText);
   button.addEventListener("click", onClick);
   return button;
 }
 
 function buildInterface() {
   els.actionBar.append(
-    createButton("Start 3 minute round", "", startGame),
-    createButton("Score now", "secondary", finishGame),
-    createButton("Reset canvas", "secondary", resetRound)
+    createButton("Start 3 minute round", "", startGame, "play"),
+    createButton("Score now", "secondary", finishGame, "target"),
+    createButton("Reset canvas", "secondary", resetRound, "reset")
   );
-
-
-  const referenceGroup = document.createElement("div");
-  referenceGroup.className = "tool-group";
-  referenceGroup.append(createGroupTitle("Reference image"));
-
-  const referenceButtons = document.createElement("div");
-  referenceButtons.className = "reference-buttons";
-  REFERENCE_IMAGES.forEach((reference, index) => {
-    const button = createButton(`${index + 1}. ${reference.name}`, index === state.activeReferenceIndex ? "reference-choice active" : "reference-choice", () => selectReference(index));
-    button.dataset.referenceIndex = String(index);
-    referenceButtons.append(button);
-  });
-  referenceGroup.append(referenceButtons);
 
   const colorGroup = document.createElement("div");
   colorGroup.className = "tool-group";
@@ -180,11 +190,11 @@ function buildInterface() {
   const toolButtons = document.createElement("div");
   toolButtons.className = "tool-buttons";
   [
-    ["brush", "Brush"],
-    ["bucket", "Paint bucket"],
-    ["eraser", "Eraser"]
-  ].forEach(([tool, label]) => {
-    const button = createButton(label, tool === state.tool ? "tool-choice active" : "tool-choice", () => selectTool(tool));
+    ["brush", "Brush", "brush"],
+    ["bucket", "Paint bucket", "bucket"],
+    ["eraser", "Eraser", "eraser"]
+  ].forEach(([tool, label, iconName]) => {
+    const button = createButton(label, tool === state.tool ? "tool-choice active" : "tool-choice", () => selectTool(tool), iconName);
     button.dataset.tool = tool;
     toolButtons.append(button);
   });
@@ -215,7 +225,7 @@ function buildInterface() {
   help.className = "help-text";
   help.textContent = "Use your mouse, stylus, or finger. The final score samples both canvases and rewards close color matches in the right places.";
 
-  els.toolPanel.append(referenceGroup, modeGroup, colorGroup, brushGroup, help);
+  els.toolPanel.append(modeGroup, colorGroup, brushGroup, help);
 }
 
 function createGroupTitle(text) {
@@ -227,15 +237,6 @@ function createGroupTitle(text) {
 
 function getActiveReference() {
   return REFERENCE_IMAGES[state.activeReferenceIndex];
-}
-
-function selectReference(index) {
-  state.activeReferenceIndex = index;
-  document.querySelectorAll("[data-reference-index]").forEach((button) => {
-    button.classList.toggle("active", Number(button.dataset.referenceIndex) === index);
-  });
-  drawOriginal();
-  resetRound();
 }
 
 function selectColor(color, activeSwatch) {
